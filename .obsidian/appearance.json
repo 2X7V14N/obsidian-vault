@@ -1,0 +1,11 @@
+{
+  "cssTheme": "AnuPpuccin",
+  "theme": "system",
+  "accentColor": "#5c61f5",
+  "enabledCssSnippets": [
+    "extended-colorschemes"
+  ],
+  "interfaceFontFamily": "JetBrains Mono",
+  "textFontFamily": "JetBrains Mono",
+  "monospaceFontFamily": "JetBrains Mono"
+}

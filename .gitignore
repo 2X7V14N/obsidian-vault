@@ -1,0 +1,19 @@
+# === Claudian / Claude 内部文件（含会话数据，不提交）===
+.claude/
+.claudian/
+
+# === Obsidian 工作区状态（机器相关，频繁变动）===
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache/
+.obsidian/plugins/obsidian-importer/data.json
+
+# === 系统文件 ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === 临时文件 ===
+*.tmp
+*.swp
+*~
