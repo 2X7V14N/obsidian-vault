@@ -265,3 +265,10 @@
 - 补充：R-CNN 家族演化表；NMS 贪心算法详解；转置卷积"广播"工作方式；FCN 深远影响（U-Net/DeepLab/特征金字塔）
 - 更新：[[1.学习/Robot_Learning/Robot_perception/index]] — Ch13 简介扩展
 - 更新：[[Deep Learning Plan|深度学习课程学习计划]] — 阶段 7 状态 ⬜ → ✅
+## [2026-08-21] git | [全库] 建立云端备份
+- 操作：初始化 Git 仓库 + 创建 GitHub 私有远程仓库 `2X7V14N/obsidian-vault`
+- 初始提交：`10d6768 Initial commit: Obsidian vault 全量备份`（251 个文件）
+- 分支：`main`，已关联 `origin` 并推送
+- 排除项：`.claude/`、`.claudian/`（内部会话数据）、`.obsidian/workspace.json`（机器相关布局）、系统垃圾文件
+- 空目录处理：`3.日常/`、`4.炒股/` 放入 `.gitkeep` 保留结构
+- 关键决策：私有仓库（个人知识库不公开）；后续建议安装 Obsidian Git 插件实现自动推送
