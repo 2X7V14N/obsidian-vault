@@ -272,3 +272,11 @@
 - 排除项：`.claude/`、`.claudian/`（内部会话数据）、`.obsidian/workspace.json`（机器相关布局）、系统垃圾文件
 - 空目录处理：`3.日常/`、`4.炒股/` 放入 `.gitkeep` 保留结构
 - 关键决策：私有仓库（个人知识库不公开）；后续建议安装 Obsidian Git 插件实现自动推送
+
+## [2026-08-27] ingest | [Robot_perception] ROS2 入门 21 讲
+- 源材料：`Clippings/` 中 9 份剪藏（古月居《ROS2 入门 21 讲》引言 + 1.1~1.5 + 概念总览 + 2.1~2.2）
+- 创建：[[concepts/ROS2/Ch01 认识 ROS 与 ROS2|Ch01]]、[[concepts/ROS2/Ch02 ROS2 与 ROS1 的对比|Ch02]]、[[concepts/ROS2/Ch03 ROS2 环境安装与配置|Ch03]]、[[concepts/ROS2/Ch04 ROS2 命令行操作|Ch04]]、[[concepts/ROS2/Ch05 核心概念：工作空间与功能包|Ch05]]
+- 下载图片：87 张 → `concepts/ROS2/attachments/`（按来源章节加前缀 r11/r12/r13/r14/r15/r21/r22/intro/c2ov）
+- 更新：[[Robot_perception/index]] — 新增「ROS2 课程笔记」章节表；ROS2 基础进度 0% → 15%
+- 补充：将 9 份散落剪藏整合为 5 章递进结构（认识→对比→安装→命令行→核心概念）；补充 DDS/RMW 中间层逻辑、colcon/rosdep 工作流说明
+- 关键决策：章节命名对齐 Ch0x 规范；图片本地化嵌入（Obsidian wiki-link）；跳过装饰图（footer/交流群）

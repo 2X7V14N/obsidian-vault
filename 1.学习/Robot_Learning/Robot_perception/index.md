@@ -65,7 +65,7 @@ domain: robot-learning
 
 | 任务 | 优先级 | 状态 | 进度 |
 |------|:------:|:----:|------|
-| ROS2 基础 | P1 | ⬜ | `░░░░░░░░░░` 0% |
+| ROS2 基础 | P1 | 🔄 | `█░░░░░░░░░` 15% |
 | TF2 坐标变换 | P1 | ⬜ | `░░░░░░░░░░` 0% |
 | MoveIt2 | P1 | ⬜ | `░░░░░░░░░░` 0% |
 
@@ -145,6 +145,20 @@ domain: robot-learning
 **学习规划**：
 - [[Deep Learning Plan\|深度学习课程学习计划]] — 完整学习路线 + 阶段性完成标准
 - [[1_学习/Robot_Learning/Robot_perception/concepts/深度学习/深度学习课程学习清单\|深度学习课程学习清单]] — 197 集课程分类清单
+
+---
+
+## ROS2 课程笔记
+
+基于《ROS2 入门 21 讲》（古月居）的系统学习笔记：
+
+| 章节 | 页面 | 内容 |
+|------|------|------|
+| Ch01 | [[concepts/ROS2/Ch01 认识 ROS 与 ROS2\|认识 ROS 与 ROS2]] | 机器人三个时代、ROS 诞生（PR2）、发展历程、核心目标与社区 |
+| Ch02 | [[concepts/ROS2/Ch02 ROS2 与 ROS1 的对比\|ROS2 与 ROS1 的对比]] | ROS1 局限、ROS2 六大需求、推倒重来、DDS 通信与 RMW、架构对比 |
+| Ch03 | [[concepts/ROS2/Ch03 ROS2 环境安装与配置\|ROS2 环境安装与配置]] | Linux/Ubuntu、虚拟机安装、ROS2 Humble 安装、talker/listener 测试、Git+VSCode |
+| Ch04 | [[concepts/ROS2/Ch04 ROS2 命令行操作\|ROS2 命令行操作]] | Linux 命令、ros2 run/node/topic/service/action/bag 实战 |
+| Ch05 | [[concepts/ROS2/Ch05 核心概念：工作空间与功能包\|核心概念：工作空间与功能包]] | 概念总览、工作空间四子空间、colcon 编译、rosdep、功能包结构 |
 
 ---
 
