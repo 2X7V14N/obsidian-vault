@@ -280,3 +280,11 @@
 - 更新：[[Robot_perception/index]] — 新增「ROS2 课程笔记」章节表；ROS2 基础进度 0% → 15%
 - 补充：将 9 份散落剪藏整合为 5 章递进结构（认识→对比→安装→命令行→核心概念）；补充 DDS/RMW 中间层逻辑、colcon/rosdep 工作流说明
 - 关键决策：章节命名对齐 Ch0x 规范；图片本地化嵌入（Obsidian wiki-link）；跳过装饰图（footer/交流群）
+
+## [2026-09-12] ingest | [Robot_perception] 项目一：ROS2 + YOLO + RGB-D 桌面目标检测与三维定位
+- 源材料：`Robot_Learning/Robot_perception/raw/project_context_package.md`（706 行项目上下文包）
+- 创建：[[1.学习/Robot_Learning/Robot_perception/concepts/项目一：基于 ROS2、YOLO 与 RGB-D 的桌面目标检测及三维定位系统]]
+- 更新：[[1.学习/Robot_Learning/Robot_perception/index]] — 新增「项目笔记」章节表；updated → 2026-09-12
+- 关键决策：按「保留原文 + 补充解释」整合，保留原文的【事实】【推断】【风险】标注；为 5 个核心技术概念（针孔反投影、深度窗口中值、frame_id、ROS2 回调机制、时间戳同步）添加解释性 callout；将原文分散的 mermaid 架构图/时序图/数据流图原样保留；新增第 14 章「能力边界总结（面试口径）」把散落的事实边界汇总成可用的面试口径
+- 互链：关联 Ch13 计算机视觉（YOLO）、相机标定 Ch01/Ch02/Ch04（针孔模型/RGB-D）、ROS2 Ch04/Ch05（命令行/功能包）、深度学习 Ch06/Ch07（CNN 骨干）
+- 备注：源文件记录了 10 个已知问题（P-01~P-10）和 18 个学习问答（Q-01~Q-18），均已保留为表格

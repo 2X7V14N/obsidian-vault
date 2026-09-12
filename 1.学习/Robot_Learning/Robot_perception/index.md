@@ -1,7 +1,7 @@
 ---
 tags: [domain, index, robot-learning]
 created: 2026-06-04
-updated: 2026-07-10
+updated: 2026-09-12
 status: budding
 domain: robot-learning
 ---
@@ -159,6 +159,16 @@ domain: robot-learning
 | Ch03 | [[concepts/ROS2/Ch03 ROS2 环境安装与配置\|ROS2 环境安装与配置]] | Linux/Ubuntu、虚拟机安装、ROS2 Humble 安装、talker/listener 测试、Git+VSCode |
 | Ch04 | [[concepts/ROS2/Ch04 ROS2 命令行操作\|ROS2 命令行操作]] | Linux 命令、ros2 run/node/topic/service/action/bag 实战 |
 | Ch05 | [[concepts/ROS2/Ch05 核心概念：工作空间与功能包\|核心概念：工作空间与功能包]] | 概念总览、工作空间四子空间、colcon 编译、rosdep、功能包结构 |
+
+---
+
+## 项目笔记
+
+理论与实践结合的项目记录：
+
+| 项目 | 页面 | 内容 |
+|------|------|------|
+| 项目一 | [[concepts/项目一：基于 ROS2、YOLO 与 RGB-D 的桌面目标检测及三维定位系统\|基于 ROS2、YOLO 与 RGB-D 的桌面目标检测及三维定位系统]] | 四节点 ROS2 感知链路、YOLO 二维检测、针孔反投影、自定义三维消息、RViz 可视化；当前为虚拟 RGB-D 原型（无真实相机/机械臂） |
 
 ---
 
