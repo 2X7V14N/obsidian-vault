@@ -168,7 +168,7 @@ domain: robot-learning
 
 | 项目 | 页面 | 内容 |
 |------|------|------|
-| 项目一 | [[concepts/项目一：基于 ROS2、YOLO 与 RGB-D 的桌面目标检测及三维定位系统\|基于 ROS2、YOLO 与 RGB-D 的桌面目标检测及三维定位系统]] | 四节点 ROS2 感知链路、YOLO 二维检测、针孔反投影、自定义三维消息、RViz 可视化；当前为虚拟 RGB-D 原型（无真实相机/机械臂） |
+| 项目一 | [[concepts/项目一：基于 ROS2、YOLO 与 RGB-D 的桌面目标检测及三维定位系统\|基于 ROS2、YOLO 与 RGB-D 的桌面目标检测及三维定位系统]] | 四节点 ROS2 感知链路、YOLO 二维检测、针孔反投影、自定义三维消息、RViz 可视化；含 `VirtualRgbdPublisher` 逐行代码详解（参数声明/发布机制/`self` 语法/try-except-finally）；当前为虚拟 RGB-D 原型（无真实相机/机械臂） |
 
 ---
 

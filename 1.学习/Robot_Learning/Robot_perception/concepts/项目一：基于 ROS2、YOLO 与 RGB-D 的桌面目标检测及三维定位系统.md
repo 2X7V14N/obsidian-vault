@@ -15,7 +15,7 @@ ingest_date: 2026-09-12
 > 这是一份项目全景笔记：把项目的**目的、原理、架构、进展、问题、决策和路线图**集中在一处。
 > 内容整理自项目上下文包（`raw/project_context_package.md`，生成时点 2026-09-12），保留原文的【事实】【推断】【风险】标注，并对关键技术概念补充了原理解释。
 >
-> **阅读顺序建议**：想快速了解 → 读第 0 章「一页速览」；想理解原理 → 读第 2 章「核心原理」；想了解当前状态和坑 → 读第 5、7 章。
+> **阅读顺序建议**：想快速了解 → 读第 0 章「一页速览」；想理解原理 → 读第 2 章「核心原理」；想了解当前状态和坑 → 读第 5、7 章；想深入代码 → 读第 16 章「代码详解：VirtualRgbdPublisher」。
 
 > [!warning] 事实边界（最重要的一条）
 > 当前系统**没有真实 RGB-D 相机、没有机械臂**，深度图是**虚拟数据**。项目**不能**宣称已完成真实三维定位或抓取。所有"三维定位"结果都只是相机光学坐标系下的计算结果，不是经过实测验证的物理量。这条边界贯穿全文，必须时刻牢记。
@@ -812,6 +812,168 @@ frame_id：camera_color_optical_frame
 已知问题（按优先级）：P-01 geometry.py 顶层练习代码、P-02 inference_json.py
 的 PROJECT_ROOT、P-03 device 写死 "0"、P-05 虚拟深度为常量、P-06 深度校验不足
 ```
+
+---
+
+## 16. 代码详解：VirtualRgbdPublisher 虚拟 RGB-D 发布节点
+
+> 本节是对主链路第一个节点 `virtual_rgbd_publisher.py` 的**逐行代码拆解**，涵盖节点构造、参数声明、发布机制和 Python 核心语法。理解了这个节点，就理解了 ROS2 节点"**构造 → 注册回调 → 事件循环触发**"的完整生命周期（呼应第 2.6 节和第 8 章 Q-14/Q-15/Q-17）。
+
+### 16.1 节点职责
+
+本节点在**没有真实物理相机**的情况下，通过读取本地图片，模拟发布三路消息：
+
+- 彩色图像（RGB）→ `color_topic`
+- 深度图像（Depth）→ `depth_topic`
+- 相机内参消息（CameraInfo）→ `camera_info_topic`
+
+它是"可替换输入"设计的关键：真实相机到位后，只要驱动发布到同名的 `/camera/...` 话题，下游节点无需任何改动。
+
+### 16.2 节点构造与参数声明（`__init__`）
+
+#### 代码实现
+
+```python
+def __init__(self) -> None:
+    super().__init__("virtual_rgbd_publisher")
+
+    self.declare_parameter("image_path", "")
+    self.declare_parameter("color_topic", "/camera/color/image_raw")
+    self.declare_parameter(
+        "depth_topic",
+        "/camera/aligned_depth_to_color/image_raw",
+    )
+    self.declare_parameter(
+        "camera_info_topic",
+        "/camera/color/camera_info",
+    )
+    self.declare_parameter("frame_id", "camera_color_optical_frame")
+    self.declare_parameter("period", 0.5)
+    self.declare_parameter("depth_m", 0.60)
+    self.declare_parameter("fx", 600.0)
+    self.declare_parameter("fy", 600.0)
+    self.declare_parameter("cx", 320.0)
+    self.declare_parameter("cy", 320.0)
+```
+
+#### 逐行拆解
+
+1. **继承与节点命名**：`super().__init__("virtual_rgbd_publisher")` 调用父类（`rclpy.node.Node`）的构造函数，把当前对象注册为一个名为 `virtual_rgbd_publisher` 的 ROS2 节点。
+2. **声明节点参数**：用 `self.declare_parameter(名称, 默认值)` 暴露参数，这些参数可由启动文件（Launch）或终端重映射覆盖——这就是"**代码与配置解耦**"（见第 8 章 Q-14）。
+
+#### 参数一览
+
+| 参数 | 默认值 | 含义 |
+| --- | --- | --- |
+| `image_path` | `""` | 要加载的本地图片文件路径 |
+| `color_topic` | `/camera/color/image_raw` | 彩色图话题（默认兼容 RealSense 等相机命名） |
+| `depth_topic` | `/camera/aligned_depth_to_color/image_raw` | 深度图话题（注意 `aligned_to_color`，即已对齐到彩色图） |
+| `camera_info_topic` | `/camera/color/camera_info` | 相机内参话题 |
+| `frame_id` | `camera_color_optical_frame` | 数据挂载的坐标系名称，用于 TF 树定位 |
+| `period` | `0.5` | 发布周期（秒），即 2 Hz |
+| `depth_m` | `0.60` | 虚拟深度图的固定深度值（米），即生成一张距相机 60 cm 的平面 |
+| `fx` / `fy` | `600.0` | 焦距（像素单位） |
+| `cx` / `cy` | `320.0` | 主点像素坐标 |
+
+> [!info] 为什么 `cx = cy = 320`
+> 这暗示虚拟图像的尺寸是 **640×640**（主点取图像中心，即 640/2 = 320）。注意这只是一个"假设的内参"，不是标定结果——真实相机的 `fx/fy/cx/cy` 必须通过标定得到（见 [[concepts/相机标定与 Homography/Ch02 相机成像模型与标定原理|Ch02 相机成像模型与标定原理]]）。同理，`fx = fy = 600` 也是假设值。
+
+> [!info] 话题名为什么要"长得像 RealSense"
+> `/camera/color/image_raw`、`/camera/aligned_depth_to_color/image_raw`、`/camera/color/camera_info` 这几个名字是 **Intel RealSense 系列相机 ROS2 驱动的标准命名**。用这套命名意味着：将来把虚拟节点换成真实 RealSense，下游的 `yolo_detector` 和 `rgbd_localizer` **一行都不用改**——因为话题名完全一致。这正是"可替换输入"的具体落地方式。
+
+### 16.3 图像数据生成与发布（`publish_frame`）
+
+#### 代码实现
+
+```python
+def publish_frame(self) -> None:
+    stamp = self.get_clock().now().to_msg()
+
+    color_message = self.bridge.cv2_to_imgmsg(self.image, encoding="bgr8")
+    color_message.header.stamp = stamp
+    color_message.header.frame_id = self.frame_id
+
+    depth_image = np.full(
+        (self.height, self.width),
+        self.depth_m,
+        dtype=np.float32,
+    )
+    depth_message = self.bridge.cv2_to_imgmsg(
+        depth_image,
+        encoding="32FC1",
+    )
+    depth_message.header.stamp = stamp
+    depth_message.header.frame_id = self.frame_id
+
+    self.color_publisher.publish(color_message)
+    self.depth_publisher.publish(depth_message)
+    self.camera_info_publisher.publish(self.create_camera_info(stamp))
+```
+
+#### 逻辑拆解
+
+1. **时间戳同步**：获取当前系统时间戳 `stamp`，让 RGB 图、Depth 图和 CameraInfo 拥有**完全一致的时间戳**，方便下游节点做多传感器时间同步（MessageFilter，见第 2.7 节）。
+2. **RGB 图像转换**：用 `cv_bridge` 把 OpenCV 格式的 `self.image` 转成 ROS2 图像消息（`bgr8` 编码）。
+3. **虚拟深度图构建**：用 NumPy 创建高 `self.height`、宽 `self.width` 的数组，全部填充为 `self.depth_m`，编码为 `32FC1`（单通道 32 位浮点，单位米）。**注意这里就是 P-05 的根源**——整张图深度是同一个常量。
+4. **话题发布**：分别把彩色图、深度图和内参消息发布到各自的话题上。
+
+> [!info] 为什么 `publish_frame` 没有显式被调用却能运行
+> 它的调用链是：`main()` 实例化节点 → `__init__` 中通过 `create_timer(period, self.publish_frame)` 注册 → `rclpy.spin()` 进入事件循环 → 定时器到期时由 executor 调用。详见第 2.6 节和 Q-15。
+
+> [!info] 三路消息共用同一个 `stamp` 的意义
+> 虚拟输入给三路消息打上**完全相同**的时间戳，是为了让下游的 `ApproximateTimeSynchronizer` 能可靠地把它们配成一组。真实相机场景下，三路消息的时间戳来自硬件，只可能"接近"而非"相等"，所以定位节点用的是**近似**时间同步（`slop=0.1`）。
+
+### 16.4 关键语法与设计解析
+
+#### 16.4.1 类中 `self.` 前缀的作用
+
+在 Python 类的方法中，`self.` 用于引用当前**对象的实例属性与方法**。
+
+| 形式 | 作用范围 | 生命周期 | 示例 |
+| --- | --- | --- | --- |
+| **局部变量**（不加 `self.`） | 仅在当前函数内部可用 | 函数执行完毕即销毁 | `stamp = self.get_clock().now().to_msg()` |
+| **实例属性**（带 `self.`） | 在该实例的所有成员函数间共享 | 与节点生命周期相同，长期占用内存 | `self.image`、`self.color_publisher` |
+
+**关键应用**：`publish_frame` 需要读取在初始化阶段加载好的 `self.image` 和 `self.depth_m`，并通过 `self.color_publisher` 发布，因此必须用 `self.` 访问。
+
+> [!info] 理解 `self` 的一句话
+> `self` 就是"**这个对象自己**"。`stamp` 是一次性的草稿纸，用完即扔；`self.image` 是对象的"记忆"，在整个节点活着期间都保存着。判断该不该加 `self.`：**这个数据后续别的方法还要用吗？** 要，就存成 `self.xxx`。
+
+#### 16.4.2 程序入口与异常捕获（`try ... except ... finally`）
+
+ROS2 节点的主入口采用了标准的安全退出机制：
+
+```python
+def main(args=None) -> None:
+    rclpy.init(args=args)
+    node = VirtualRgbdPublisher()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+```
+
+- **`try:`** — 运行 `rclpy.spin(node)`，让节点进入**阻塞循环**，持续监听并执行回调任务。
+- **`except KeyboardInterrupt:`** — 用户在终端按 `Ctrl + C` 时，Python 抛出 `KeyboardInterrupt` 异常。此处捕获并 `pass`（直接跳过），目的是**抑制无意义的程序崩溃报错日志，实现优雅退出**。
+- **`finally:`** — 无论节点是正常关闭、被 `Ctrl + C` 打断还是发生未知错误，`finally` 块**一定会执行**。用于清理资源：调用 `node.destroy_node()` 销毁节点，并调用 `rclpy.shutdown()` 注销底层 ROS2 Python 客户端通信上下文。
+
+> [!info] 为什么必须"清理"
+> `rclpy.init()` 创建了 ROS2 的通信上下文（DDS 参与者在底层启动）。如果不调用 `rclpy.shutdown()` 就退出，可能导致进程残留、端口占用或下次启动异常。`finally` 保证无论怎么退出都会清理——这是**资源管理**的通用范式（类似 C++ 的 RAII、Python 的 `with` 语句）。
+
+### 16.5 与笔记其他部分的关联
+
+| 本节内容 | 关联位置 |
+| --- | --- |
+| 回调注册与事件循环 | 第 2.6 节「ROS2 事件驱动机制」、Q-15、Q-16 |
+| 参数声明的含义 | Q-14（`declare_parameter`） |
+| 三路时间戳一致 | 第 2.7 节「时间戳同步」 |
+| 虚拟深度是常量 | 第 7 章 P-05（虚拟深度是整张图的常量） |
+| `frame_id` 的语义 | 第 2.5 节「坐标系和 frame_id」、Q-13 |
+| 内参 `fx/fy/cx/cy` | 第 2.3 节「针孔相机模型」、Q-09 |
+| 节点文件在仓库中的位置 | 第 3.3 节「关键文件地图」 |
 
 ---
 
